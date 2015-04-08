@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "outDir": "build/",
+        "sourceMap": true,
+        "target": "es5"
+    },
+    "filesGlob": [
+        "lib/**/*.ts",
+        "tests/**/*.ts",
+        "cqrs-tools.ts"
+    ],
+    "files": [
+        "lib/commands.ts",
+        "lib/common.ts",
+        "lib/eventstore.ts",
+        "lib/iconnection.ts",
+        "lib/messages.ts",
+        "lib/serializer.ts",
+        "tests/connection.test.ts",
+        "tests/messages.test.ts",
+        "tests/serializer.test.ts"
+    ]
+}
