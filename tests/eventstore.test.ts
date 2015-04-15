@@ -34,8 +34,14 @@ describe('Event store - TCP connection', () => {
 
 	describe('When appending new events', () => {
 
+		var streamName = 'demo-stream';
+
+		beforeEach(done => {
+			eventStore.deleteStream(streamName, common.ExpectedVersion.any, done);
+		});
+
 		it('should execute the callback with no error and the response message', (done) => {
-			eventStore.appendToStream('Hello', common.ExpectedVersion.any,
+			eventStore.appendToStream(streamName, common.ExpectedVersion.any,
 				new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
 				(error, response) => {
 					should.not.exist(error);
@@ -45,7 +51,7 @@ describe('Event store - TCP connection', () => {
 		});
 
 		it('can append one event', (done) => {
-			eventStore.appendToStream('Hello', common.ExpectedVersion.any,
+			eventStore.appendToStream(streamName, common.ExpectedVersion.any,
 				new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
 				(error, response) => {
 					should.not.exist(error);
@@ -55,7 +61,7 @@ describe('Event store - TCP connection', () => {
 		});
 
 		it('can append multiple events', (done) => {
-			eventStore.appendToStream('Hello', common.ExpectedVersion.any,
+			eventStore.appendToStream(streamName, common.ExpectedVersion.any,
 				[ new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
 				  new messages.NewEvent(uuid.v4(), 'Test', { somedata: 2 }, { somemetadata: 4 }) ],
 				(error, response) => {
@@ -66,13 +72,46 @@ describe('Event store - TCP connection', () => {
 		});
 
 		it('should return an error if the event is not appended', (done) => {
-			eventStore.appendToStream('Hello', 99999999999,
+			eventStore.appendToStream(streamName, 99999999999,
 				new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
 				(error, response) => {
 					error.should.exist;
 					response.result.should.eql(messages.OperationResult.wrongExpectedVersion);
 					done();
 				});
+		});
+	});
+
+	describe('When deleting a stream', () => {
+
+		var streamName = 'demo-stream';
+
+		beforeEach(done => {
+			eventStore.appendToStream(streamName, common.ExpectedVersion.any,
+				new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
+				done);
+		});
+
+		it('should execute the callback with no error and the response message', (done) => {
+			eventStore.deleteStream(streamName, common.ExpectedVersion.any,
+				(error, response) => {
+					should.not.exist(error);
+					response.result.should.eql(messages.OperationResult.success);
+					done();
+				});
+		});
+
+		it('should return an error if the stream is not deleted', (done) => {
+			eventStore.deleteStream(streamName, 9999999999,
+				(error, response) => {
+					error.should.exist;
+					response.result.should.eql(messages.OperationResult.wrongExpectedVersion);
+					done();
+				});
+		});
+
+		it('should delete the stream', (done) => {
+			// todo read the stream
 		});
 	});
 });

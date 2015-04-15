@@ -23,29 +23,53 @@ describe('Event store - TCP connection', function () {
         });
     });
     describe('When appending new events', function () {
+        var streamName = 'demo-stream';
+        beforeEach(function (done) {
+            eventStore.deleteStream(streamName, common.ExpectedVersion.any, done);
+        });
         it('should execute the callback with no error and the response message', function (done) {
-            eventStore.appendToStream('Hello', common.ExpectedVersion.any, new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }), function (error, response) {
+            eventStore.appendToStream(streamName, common.ExpectedVersion.any, new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }), function (error, response) {
                 should.not.exist(error);
                 response.result.should.eql(messages.OperationResult.success);
                 done();
             });
         });
         it('can append one event', function (done) {
-            eventStore.appendToStream('Hello', common.ExpectedVersion.any, new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }), function (error, response) {
+            eventStore.appendToStream(streamName, common.ExpectedVersion.any, new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }), function (error, response) {
                 should.not.exist(error);
                 response.result.should.eql(messages.OperationResult.success);
                 done();
             });
         });
         it('can append multiple events', function (done) {
-            eventStore.appendToStream('Hello', common.ExpectedVersion.any, [new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }), new messages.NewEvent(uuid.v4(), 'Test', { somedata: 2 }, { somemetadata: 4 })], function (error, response) {
+            eventStore.appendToStream(streamName, common.ExpectedVersion.any, [new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }), new messages.NewEvent(uuid.v4(), 'Test', { somedata: 2 }, { somemetadata: 4 })], function (error, response) {
                 should.not.exist(error);
                 response.result.should.eql(messages.OperationResult.success);
                 done();
             });
         });
         it('should return an error if the event is not appended', function (done) {
-            eventStore.appendToStream('Hello', 99999999999, new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }), function (error, response) {
+            eventStore.appendToStream(streamName, 99999999999, new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }), function (error, response) {
+                error.should.exist;
+                response.result.should.eql(messages.OperationResult.wrongExpectedVersion);
+                done();
+            });
+        });
+    });
+    describe('When deleting a stream', function () {
+        var streamName = 'demo-stream';
+        beforeEach(function (done) {
+            eventStore.appendToStream(streamName, common.ExpectedVersion.any, new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }), done);
+        });
+        it('should execute the callback with no error and the response message', function (done) {
+            eventStore.deleteStream(streamName, common.ExpectedVersion.any, function (error, response) {
+                should.not.exist(error);
+                response.result.should.eql(messages.OperationResult.success);
+                done();
+            });
+        });
+        it('should return an error if the event is not appended', function (done) {
+            eventStore.deleteStream(streamName, 9999999999, function (error, response) {
                 error.should.exist;
                 response.result.should.eql(messages.OperationResult.wrongExpectedVersion);
                 done();

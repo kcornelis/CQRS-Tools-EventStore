@@ -104,6 +104,42 @@ class TcpConnection implements IConnection {
 		this._sendTcpPacket(Commands.WriteEvents, this._serializer.serialize(Commands.WriteEvents, new messages.WriteEvents(stream, expectedVersion, events)), callback);
 	}
 
+	private _handleWriteEventsCompleted(correlationId: string, payload: Buffer) {
+		log.debug('TcpConnection - _handleWriteEventsCompleted', 'Received write events completed', { commandCode: Commands.DeleteStreamCompleted, correlationId: correlationId, message: message });
+
+		var callback = this._getResponseCallback(correlationId);
+		var message = this._serializer.deserialize<messages.WriteEventsCompleted>(Commands.WriteEventsCompleted, payload);
+
+		if (!callback) {
+			log.debug('TcpConnection - _handleWriteEventsCompleted', 'No callback registered', { commandCode: Commands.WriteEventsCompleted, correlationId: correlationId, noCallback: true });
+		} else if (message.result === messages.OperationResult.success) {
+			callback(null, message);
+		} else {
+			callback('Operation result: ' + message.result, message);
+		}
+	}
+
+	deleteStream(stream: string, expectedVersion: number, callback: (error?: any, result?: messages.DeleteStreamCompleted) => void) {
+		log.debug('TcpConnection - deleteStream', 'Delete stream ' + stream + ', expected version ' + expectedVersion);
+
+		this._sendTcpPacket(Commands.DeleteStream, this._serializer.serialize(Commands.DeleteStream, new messages.DeleteStream(stream, expectedVersion)), callback);
+	}
+
+	private _handleDeleteStreamCompleted(correlationId: string, payload: Buffer) {
+		log.debug('TcpConnection - _handleDeleteStreamCompleted', 'Received delete stream completed', { commandCode: Commands.DeleteStreamCompleted, correlationId: correlationId, message: message });
+
+		var callback = this._getResponseCallback(correlationId);
+		var message = this._serializer.deserialize<messages.DeleteStreamCompleted>(Commands.DeleteStreamCompleted, payload);
+
+		if (!callback) {
+			log.debug('TcpConnection - _handleDeleteStreamCompleted', 'No callback registered', { commandCode: Commands.DeleteStreamCompleted, correlationId: correlationId, noCallback: true });
+		} else if (message.result === messages.OperationResult.success) {
+			callback(null, message);
+		} else {
+			callback('Operation result: ' + message.result, message);
+		}
+	}
+
 	private _handleConnect() {
 		log.info('TcpConnection - _handleConnect', 'Connected to the eventstore');
 
@@ -184,23 +220,15 @@ class TcpConnection implements IConnection {
 			payload = packet.slice(TcpHeaderPart.full);
 		}
 
-		var cb = this._getResponseCallback(correlationId);
-		if (cb) {
-			if (commandCode === Commands.WriteEventsCompleted) {
-				var message = this._serializer.deserialize<messages.WriteEventsCompleted>(Commands.WriteEventsCompleted, payload);
-				log.debug('TcpConnection - _processCompletePacket', 'Received write events completed', { commandCode: commandCode, correlationId: correlationId, message: message });
-
-				if (message.result === messages.OperationResult.success) {
-					cb(null, message);
-				} else {
-					cb('Operation result: ' + message.result, message);
-				}
-			} else {
-				log.warn('TcpConnection - _processCompletePacket', 'Received unknown packet type (' + command + ')', { commandCode: commandCode, correlationId: correlationId, unknownCommand: true });
-				cb();
-			}
+		if (commandCode === Commands.WriteEventsCompleted) {
+			this._handleWriteEventsCompleted(correlationId, payload);
+		} else if (commandCode === Commands.DeleteStreamCompleted) {
+			this._handleDeleteStreamCompleted(correlationId, payload);
 		} else {
-			log.debug('TcpConnection - _processCompletePacket', 'Received ' + command + ' (no callback registered)', { commandCode: commandCode, correlationId: correlationId, noCallback: true });
+			log.warn('TcpConnection - _processCompletePacket', 'Received unknown packet type (' + command + ')', { commandCode: commandCode, correlationId: correlationId, unknownCommand: true });
+
+			var callback = this._getResponseCallback(correlationId);
+			if (callback) { callback(); }
 		}
 	}
 

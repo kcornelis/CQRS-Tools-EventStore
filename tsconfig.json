@@ -15,6 +15,7 @@
         "lib/common.ts",
         "lib/eventstore.ts",
         "lib/iconnection.ts",
+        "lib/logger.ts",
         "lib/messages.ts",
         "lib/serializer.ts",
         "tests/commands.test.ts",
