@@ -8,6 +8,8 @@ Build:
 	grunt
 Run test:
 	grunt test
+Run test with console logs:
+	grunt log test	
 
 
 Proto

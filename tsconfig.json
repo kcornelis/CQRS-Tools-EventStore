@@ -17,7 +17,9 @@
         "lib/iconnection.ts",
         "lib/messages.ts",
         "lib/serializer.ts",
-        "tests/connection.test.ts",
+        "tests/commands.test.ts",
+        "tests/common.test.ts",
+        "tests/eventstore.test.ts",
         "tests/messages.test.ts",
         "tests/serializer.test.ts"
     ]

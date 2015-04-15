@@ -9,6 +9,7 @@ import IConnection = require('./iconnection');
 import messages = require('./messages');
 import Serializer = require('./serializer');
 import common = require('./common');
+import log = require('./logger');
 
 class TcpHeaderPart {
 	static contentLength: number = 4;
@@ -48,19 +49,26 @@ class TcpConnection implements IConnection {
 	private _buffer: Buffer = null;
 	private _responseInfos : any = { };
 	private _onConnect: () => void;
+	private _onEnd: () => void;
+	private _onClose: (hadError: boolean) => void;
 	private _onError: (error: any) => void;
 
 	constructor(settings: any = { }) {
+		log.info('TcpConnection - constructor', 'Created a tcp connection');
+
 		this._settings.port = settings.port || 1113;
 		this._settings.host = settings.host || '127.0.0.1';
 	}
 
 	connect() {
+		log.info('TcpConnection - connect', 'Connecting to ' + this._settings.host + ':' + this._settings.port);
 
 		this._socket = net.createConnection(this._settings.port, this._settings.host);
 		this._socket.on('connect', () => { this._handleConnect(); });
 		this._socket.on('data', (data) => { this._handleData(data); });
 		this._socket.on('error', (error) => { this._handleError(error); });
+		this._socket.on('end', () => { this._handleEnd(); });
+		this._socket.on('close', (hadError) => { this._handleClose(hadError); });
 	}
 
 	onConnect(callback: () => void) {
@@ -71,13 +79,20 @@ class TcpConnection implements IConnection {
 		this._onError = callback;
 	}
 
+	onEnd(callback: () => void) {
+		this._onEnd = callback;
+	}
+
 	ping(callback: (error?: any) => void) {
+		log.debug('TcpConnection - ping', 'Sending ping');
+
 		this._sendTcpPacket(Commands.Ping, null, callback);
 	}
 
 	appendToStream(stream: string, expectedVersion: number, event: messages.NewEvent, callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
 	appendToStream(stream: string, expectedVersion: number, events: messages.NewEvent[], callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
 	appendToStream(stream: string, expectedVersion: number, events: any, callback: (error?: any, result?: messages.WriteEventsCompleted) => void) {
+		log.debug('TcpConnection - appendToStream', 'Append data to stream ' + stream + ', expected version ' + expectedVersion);
 
 		var eventArray: messages.NewEvent[];
 		if (Object.prototype.toString.call(events) === '[object Array]' ) {
@@ -90,15 +105,31 @@ class TcpConnection implements IConnection {
 	}
 
 	private _handleConnect() {
-		console.log('Connected to the eventstore');
+		log.info('TcpConnection - _handleConnect', 'Connected to the eventstore');
 
 		if (this._onConnect) {
 			this._onConnect();
 		}
 	}
 
+	private _handleEnd() {
+		log.info('TcpConnection - _handleEnd', 'Connection received a FIN packet, closing the socket');
+
+		if (this._onEnd) {
+			this._onEnd();
+		}
+	}
+
+	private _handleClose(hadError) {
+		log.info('TcpConnection - _handleClose', 'Connection closed (had error:' + hadError + ')');
+
+		if (this._onClose) {
+			this._onClose(hadError);
+		}
+	}
+
 	private _handleError(error) {
-		console.log('Eventstore error: ' + error);
+		log.error('TcpConnection - _handleError', 'Received an error (' + error + ')', { code: error.code });
 
 		if (this._onError) {
 			this._onError(error);
@@ -131,11 +162,13 @@ class TcpConnection implements IConnection {
 			// remove the content length header and process the packet
 			this._processCompletePacket(packet);
 		} else if (packet.length >= expectedPacketLength) {
-			// the received packet is to big, split it and retry
+			log.debug('TcpConnection - _handleData', 'Received a packet that is to big, split it it and retry');
+
 			this._handleData(packet.slice(0, expectedPacketLength));
 			this._handleData(packet.slice(expectedPacketLength));
 		} else {
-			// the packet is to small, keep it in the buffer and wait for the next one
+			log.debug('TcpConnection - _handleData', 'Received a packet that is to small, keep it and wait for the next packet');
+
 			this._buffer = packet;
 		}
 	}
@@ -151,20 +184,23 @@ class TcpConnection implements IConnection {
 			payload = packet.slice(TcpHeaderPart.full);
 		}
 
-		console.log('Received: ' + command + ' (' + correlationId + ')');
-
 		var cb = this._getResponseCallback(correlationId);
 		if (cb) {
 			if (commandCode === Commands.WriteEventsCompleted) {
 				var message = this._serializer.deserialize<messages.WriteEventsCompleted>(Commands.WriteEventsCompleted, payload);
-				if (message.result === common.OperationResult.success) {
+				log.debug('TcpConnection - _processCompletePacket', 'Received write events completed', { commandCode: commandCode, correlationId: correlationId, message: message });
+
+				if (message.result === messages.OperationResult.success) {
 					cb(null, message);
 				} else {
 					cb('Operation result: ' + message.result, message);
 				}
 			} else {
+				log.warn('TcpConnection - _processCompletePacket', 'Received unknown packet type (' + command + ')', { commandCode: commandCode, correlationId: correlationId, unknownCommand: true });
 				cb();
 			}
+		} else {
+			log.debug('TcpConnection - _processCompletePacket', 'Received ' + command + ' (no callback registered)', { commandCode: commandCode, correlationId: correlationId, noCallback: true });
 		}
 	}
 

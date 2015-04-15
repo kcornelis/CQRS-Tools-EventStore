@@ -4,8 +4,14 @@ module.exports = function(grunt){
 	grunt.loadNpmTasks('grunt-mocha-test');
 	grunt.loadNpmTasks('grunt-tslint');
 	grunt.loadNpmTasks('grunt-force-task');
+	grunt.loadNpmTasks('grunt-env');
 
 	grunt.initConfig({
+		env: {
+			logDebug: {
+				LOG_LEVEL: 'debug'
+			}
+		},
 		tslint: {
 			options: {
 				configuration: grunt.file.readJSON('tslint.json'),
@@ -14,7 +20,7 @@ module.exports = function(grunt){
 			files: {
 				src: ['lib/**/*.ts', 'tests/**/*.ts', 'cqrs-tools-eventstore.ts']
 			}
-		},
+		},		
 		typescript: {
 			lib: {
 				src: ['lib/**/*.ts', 'cqrs-tools-eventstore.ts'],
@@ -42,6 +48,7 @@ module.exports = function(grunt){
 
 	grunt.registerTask('default', ['lint', 'build']);
 
+	grunt.registerTask('log', [ 'env:logDebug' ]);
 	grunt.registerTask('lint', ['force:tslint']);
 	grunt.registerTask('build', ['typescript:lib', 'typescript:tests']);
 	grunt.registerTask('test', ['lint', 'build', 'mochaTest']);
