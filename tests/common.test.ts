@@ -33,53 +33,17 @@ describe('ContentType', () => {
 	});
 });
 
-describe('ContentType', () => {
+describe('StreamPosition', () => {
 
-	describe('success', () => {
+	describe('Start', () => {
 		it('should return 0', () => {
-			common.OperationResult.success.should.eql(0);
+			common.StreamPosition.start.should.eql(0);
 		});
 	});
 
-	describe('prepareTimeout', () => {
-		it('should return 0', () => {
-			common.OperationResult.prepareTimeout.should.eql(1);
-		});
-	});
-
-	describe('commitTimeout', () => {
-		it('should return 0', () => {
-			common.OperationResult.commitTimeout.should.eql(2);
-		});
-	});
-
-	describe('forwardTimeout', () => {
-		it('should return 0', () => {
-			common.OperationResult.forwardTimeout.should.eql(3);
-		});
-	});
-
-	describe('wrongExpectedVersion', () => {
-		it('should return 0', () => {
-			common.OperationResult.wrongExpectedVersion.should.eql(4);
-		});
-	});
-
-	describe('streamDeleted', () => {
-		it('should return 0', () => {
-			common.OperationResult.streamDeleted.should.eql(5);
-		});
-	});
-
-	describe('invalidTransaction', () => {
-		it('should return 0', () => {
-			common.OperationResult.invalidTransaction.should.eql(6);
-		});
-	});
-
-	describe('accessDenied', () => {
-		it('should return 0', () => {
-			common.OperationResult.accessDenied.should.eql(7);
+	describe('End', () => {
+		it('should return -1', () => {
+			common.StreamPosition.end.should.eql(-1);
 		});
 	});
 });

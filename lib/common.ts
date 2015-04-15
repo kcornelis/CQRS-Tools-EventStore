@@ -8,13 +8,7 @@ export class ContentType {
 	static json: number = 1;
 }
 
-export class OperationResult {
-	static success: number = 0;
-	static prepareTimeout: number = 1;
-	static commitTimeout: number = 2;
-	static forwardTimeout: number = 3;
-	static wrongExpectedVersion: number = 4;
-	static streamDeleted: number = 5;
-	static invalidTransaction: number = 6;
-	static accessDenied: number = 7;
+export class StreamPosition {
+	static start: number = 0;
+	static end: number = -1;
 }

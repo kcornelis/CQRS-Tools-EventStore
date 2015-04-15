@@ -2,14 +2,19 @@
 
 import should = require('should');
 import EventStore = require('../lib/eventstore');
+import IConnection = require('../lib/iconnection');
 import common = require('../lib/common');
 import messages = require('../lib/messages');
 import uuid = require('node-uuid');
 
 describe('Event store - TCP connection', () => {
 
-	var eventStore = EventStore.createConnection();
-	eventStore.connect();
+	var eventStore: IConnection;
+
+	before(() => {
+		eventStore = EventStore.createConnection();
+		eventStore.connect();
+	});
 
 	describe('When connecting with default settings', () => {
 
@@ -34,7 +39,7 @@ describe('Event store - TCP connection', () => {
 				new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
 				(error, response) => {
 					should.not.exist(error);
-					response.result.should.eql(common.OperationResult.success);
+					response.result.should.eql(messages.OperationResult.success);
 					done();
 				});
 		});
@@ -44,7 +49,7 @@ describe('Event store - TCP connection', () => {
 				new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
 				(error, response) => {
 					should.not.exist(error);
-					response.result.should.eql(common.OperationResult.success);
+					response.result.should.eql(messages.OperationResult.success);
 					done();
 				});
 		});
@@ -55,7 +60,7 @@ describe('Event store - TCP connection', () => {
 				  new messages.NewEvent(uuid.v4(), 'Test', { somedata: 2 }, { somemetadata: 4 }) ],
 				(error, response) => {
 					should.not.exist(error);
-					response.result.should.eql(common.OperationResult.success);
+					response.result.should.eql(messages.OperationResult.success);
 					done();
 				});
 		});
@@ -65,7 +70,7 @@ describe('Event store - TCP connection', () => {
 				new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
 				(error, response) => {
 					error.should.exist;
-					response.result.should.eql(common.OperationResult.wrongExpectedVersion);
+					response.result.should.eql(messages.OperationResult.wrongExpectedVersion);
 					done();
 				});
 		});

@@ -25,45 +25,15 @@ describe('ContentType', function () {
         });
     });
 });
-describe('ContentType', function () {
-    describe('success', function () {
+describe('StreamPosition', function () {
+    describe('Start', function () {
         it('should return 0', function () {
-            common.OperationResult.success.should.eql(0);
+            common.StreamPosition.start.should.eql(0);
         });
     });
-    describe('prepareTimeout', function () {
-        it('should return 0', function () {
-            common.OperationResult.prepareTimeout.should.eql(1);
-        });
-    });
-    describe('commitTimeout', function () {
-        it('should return 0', function () {
-            common.OperationResult.commitTimeout.should.eql(2);
-        });
-    });
-    describe('forwardTimeout', function () {
-        it('should return 0', function () {
-            common.OperationResult.forwardTimeout.should.eql(3);
-        });
-    });
-    describe('wrongExpectedVersion', function () {
-        it('should return 0', function () {
-            common.OperationResult.wrongExpectedVersion.should.eql(4);
-        });
-    });
-    describe('streamDeleted', function () {
-        it('should return 0', function () {
-            common.OperationResult.streamDeleted.should.eql(5);
-        });
-    });
-    describe('invalidTransaction', function () {
-        it('should return 0', function () {
-            common.OperationResult.invalidTransaction.should.eql(6);
-        });
-    });
-    describe('accessDenied', function () {
-        it('should return 0', function () {
-            common.OperationResult.accessDenied.should.eql(7);
+    describe('End', function () {
+        it('should return -1', function () {
+            common.StreamPosition.end.should.eql(-1);
         });
     });
 });
