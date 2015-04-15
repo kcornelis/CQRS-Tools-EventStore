@@ -1,6 +1,6 @@
 /// <reference path="../typings/all.d.ts" />
 
-import should = require('should');
+require('should');
 import Commands = require('../lib/commands');
 
 describe('Commands', () => {

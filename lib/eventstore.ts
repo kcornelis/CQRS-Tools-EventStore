@@ -6,6 +6,9 @@ import net = require('net');
 import uuid = require('node-uuid');
 import Commands = require('./commands');
 import IConnection = require('./iconnection');
+import messages = require('./messages');
+import Serializer = require('./serializer');
+import common = require('./common');
 
 class TcpHeaderPart {
 	static contentLength: number = 4;
@@ -41,6 +44,7 @@ class TcpConnection implements IConnection {
 
 	private _socket: net.Socket;
 	private _settings: Settings = new Settings();
+	private _serializer: Serializer = new Serializer();
 	private _buffer: Buffer = null;
 	private _responseInfos : any = { };
 	private _onConnect: () => void;
@@ -69,6 +73,20 @@ class TcpConnection implements IConnection {
 
 	ping(callback: (error?: any) => void) {
 		this._sendTcpPacket(Commands.Ping, null, callback);
+	}
+
+	appendToStream(stream: string, expectedVersion: number, event: messages.NewEvent, callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
+	appendToStream(stream: string, expectedVersion: number, events: messages.NewEvent[], callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
+	appendToStream(stream: string, expectedVersion: number, events: any, callback: (error?: any, result?: messages.WriteEventsCompleted) => void) {
+
+		var eventArray: messages.NewEvent[];
+		if (Object.prototype.toString.call(events) === '[object Array]' ) {
+			eventArray = events;
+		} else {
+			eventArray = [ events ];
+		}
+
+		this._sendTcpPacket(Commands.WriteEvents, this._serializer.serialize(Commands.WriteEvents, new messages.WriteEvents(stream, expectedVersion, events)), callback);
 	}
 
 	private _handleConnect() {
@@ -124,7 +142,8 @@ class TcpConnection implements IConnection {
 
 	private _processCompletePacket(packet: Buffer) {
 
-		var command = Commands.codeToCommand(packet.readUInt8(TcpPacketOffset.command));
+		var commandCode = packet.readUInt8(TcpPacketOffset.command);
+		var command = Commands.codeToCommand(commandCode);
 		var correlationId = uuid.unparse(packet, TcpPacketOffset.correlationId);
 
 		var payload = null;
@@ -136,7 +155,16 @@ class TcpConnection implements IConnection {
 
 		var cb = this._getResponseCallback(correlationId);
 		if (cb) {
-			cb();
+			if (commandCode === Commands.WriteEventsCompleted) {
+				var message = this._serializer.deserialize<messages.WriteEventsCompleted>(Commands.WriteEventsCompleted, payload);
+				if (message.result === common.OperationResult.success) {
+					cb(null, message);
+				} else {
+					cb('Operation result: ' + message.result, message);
+				}
+			} else {
+				cb();
+			}
 		}
 	}
 
@@ -152,7 +180,7 @@ class TcpConnection implements IConnection {
 		}
 	}
 
-	private _sendTcpPacket(commandId: number, payload: Buffer, cb: (error?: any, result?: any) => void) {
+	private _sendTcpPacket(commandId: number, payload: any, cb: (error?: any, result?: any) => void) {
 
 		var correlationId = uuid.v4();
 		var responseInfo = new ResponseInfo(cb, false);
@@ -162,8 +190,9 @@ class TcpConnection implements IConnection {
 		this._socket.write(packet);
 	}
 
-	private _createTcpPacket(commandId: number, correlationId: string, payload: Buffer) {
+	private _createTcpPacket(commandId: number, correlationId: string, payload: any) {
 
+		payload = new Buffer(payload || []);
 		var flags = 0;
 		var payloadSize = payload ? payload.length : 0;
 		var fullPacketSize = TcpHeaderPart.full + payloadSize;

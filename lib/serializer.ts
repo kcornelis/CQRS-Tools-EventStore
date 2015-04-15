@@ -1,7 +1,8 @@
 /// <reference path="../typings/all.d.ts" />
 
 import ProtoBuf = require('protobufjs');
-import messages = require('messages');
+import messages = require('./messages');
+import Commands = require('./commands');
 
 class Serializer {
 
@@ -15,26 +16,14 @@ class Serializer {
 		}
 	}
 
-	serialize(message: messages.IMessage) {
-		var protoMessage = this._builder.build(this._ns + this._getMessageName(message));
-		return new protoMessage(message).toArrayBuffer();
+	serialize(command: number, message: messages.IMessage) {
+		var protoMessage = this._builder.build(this._ns + Commands.codeToCommand(command));
+		return new protoMessage(message).toBuffer();
 	}
 
-	populate<T extends messages.IMessage>(message: T, buffer: any): T {
-		var serializer = this._builder.build(this._ns + this._getMessageName(message));
-		var protoMessage = serializer.decode(buffer);
-		for (var k in protoMessage) {
-			if (protoMessage[k] !== undefined && typeof(protoMessage[k]) !== 'function') {
-				message[k] = protoMessage[k];
-			}
-		}
-		return message;
-	}
-
-	private _getMessageName(m) {
-		var funcNameRegex = /function (.{1,})\(/;
-		var results = (funcNameRegex).exec((m).constructor.toString());
-		return (results && results.length > 1) ? results[1] : '';
+	deserialize<T extends messages.IMessage>(command: number, buffer: any): T {
+		var serializer = this._builder.build(this._ns + Commands.codeToCommand(command));
+		return <T>serializer.decode(buffer);
 	}
 }
 
