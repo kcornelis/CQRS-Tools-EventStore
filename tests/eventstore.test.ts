@@ -194,4 +194,25 @@ describe('Event store - TCP connection', () => {
 				});
 		});
 	});
+
+	describe('When reading a stream (raw)', () => {
+
+		var streamName = 'demo-stream';
+
+		beforeEach(done => {
+			eventStore.deleteStream(streamName, common.ExpectedVersion.any, () => {
+				eventStore.appendToStream(streamName, common.ExpectedVersion.any,
+					new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
+					done);
+			});
+		});
+
+		it('should send the message to the event store', (done) => {
+			eventStore.readStreamEventsForwardRaw(new messages.ReadStreamEvents(streamName, 0, 99999999999),
+				(error, response) => {
+					response.events[0].event.data.toString('utf8').should.eql('{"somedata":1}');
+					done();
+				});
+		});
+	});
 });

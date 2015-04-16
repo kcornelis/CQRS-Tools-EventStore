@@ -14,6 +14,7 @@ interface IConnection {
 	deleteStreamRaw(message: messages.DeleteStream, callback: (error?: any, result?: messages.DeleteStreamCompleted) => void);
 	deleteStream(stream: string, expectedVersion: number, callback: (error?: any, result?: messages.DeleteStreamCompleted) => void);
 
+	readStreamEventsForwardRaw(message: messages.ReadStreamEvents, callback: (error?: any, result?: messages.ReadStreamEventsCompleted) => void);
 	readStreamEventsForward(stream: string, from: number, max: number, callback: (error?: any, result?: messages.ReadStreamEventsCompleted) => void);
 }
 
