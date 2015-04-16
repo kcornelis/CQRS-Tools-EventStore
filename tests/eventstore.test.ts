@@ -82,6 +82,26 @@ describe('Event store - TCP connection', () => {
 		});
 	});
 
+	describe('When appending new events (raw)', () => {
+
+		var streamName = 'demo-stream';
+
+		beforeEach(done => {
+			eventStore.deleteStream(streamName, common.ExpectedVersion.any, done);
+		});
+
+		it('sends the message to the event store', (done) => {
+			eventStore.appendToStreamRaw(new messages.WriteEvents(streamName, common.ExpectedVersion.any,
+				[ new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
+				  new messages.NewEvent(uuid.v4(), 'Test', { somedata: 2 }, { somemetadata: 4 }) ]),
+				(error, response) => {
+					should.not.exist(error);
+					response.result.should.eql(messages.OperationResult.success);
+					done();
+				});
+		});
+	});
+
 	describe('When deleting a stream', () => {
 
 		var streamName = 'demo-stream';
@@ -112,6 +132,27 @@ describe('Event store - TCP connection', () => {
 
 		it('should delete the stream', (done) => {
 			// todo read the stream
+			done();
+		});
+	});
+
+	describe('When deleting a stream (raw)', () => {
+
+		var streamName = 'demo-stream';
+
+		beforeEach(done => {
+			eventStore.appendToStream(streamName, common.ExpectedVersion.any,
+				new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
+				done);
+		});
+
+		it('it sends the message to the server', (done) => {
+			eventStore.deleteStreamRaw(new messages.DeleteStream(streamName, common.ExpectedVersion.any),
+				(error, response) => {
+					should.not.exist(error);
+					response.result.should.eql(messages.OperationResult.success);
+					done();
+				});
 		});
 	});
 });

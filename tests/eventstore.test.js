@@ -56,6 +56,19 @@ describe('Event store - TCP connection', function () {
             });
         });
     });
+    describe('When appending new events (raw)', function () {
+        var streamName = 'demo-stream';
+        beforeEach(function (done) {
+            eventStore.deleteStream(streamName, common.ExpectedVersion.any, done);
+        });
+        it('sends the message to the event store', function (done) {
+            eventStore.appendToStreamRaw(new messages.WriteEvents(streamName, common.ExpectedVersion.any, [new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }), new messages.NewEvent(uuid.v4(), 'Test', { somedata: 2 }, { somemetadata: 4 })]), function (error, response) {
+                should.not.exist(error);
+                response.result.should.eql(messages.OperationResult.success);
+                done();
+            });
+        });
+    });
     describe('When deleting a stream', function () {
         var streamName = 'demo-stream';
         beforeEach(function (done) {
@@ -68,10 +81,27 @@ describe('Event store - TCP connection', function () {
                 done();
             });
         });
-        it('should return an error if the event is not appended', function (done) {
+        it('should return an error if the stream is not deleted', function (done) {
             eventStore.deleteStream(streamName, 9999999999, function (error, response) {
                 error.should.exist;
                 response.result.should.eql(messages.OperationResult.wrongExpectedVersion);
+                done();
+            });
+        });
+        it('should delete the stream', function (done) {
+            // todo read the stream
+            done();
+        });
+    });
+    describe('When deleting a stream (raw)', function () {
+        var streamName = 'demo-stream';
+        beforeEach(function (done) {
+            eventStore.appendToStream(streamName, common.ExpectedVersion.any, new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }), done);
+        });
+        it('it sends the message to the server', function (done) {
+            eventStore.deleteStreamRaw(new messages.DeleteStream(streamName, common.ExpectedVersion.any), function (error, response) {
+                should.not.exist(error);
+                response.result.should.eql(messages.OperationResult.success);
                 done();
             });
         });

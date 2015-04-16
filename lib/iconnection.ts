@@ -7,9 +7,11 @@ interface IConnection {
 
 	ping(callback: (error?: any) => void);
 
+	appendToStreamRaw(message: messages.WriteEvents, callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
 	appendToStream(stream: string, expectedVersion: number, event: messages.NewEvent[], callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
 	appendToStream(stream: string, expectedVersion: number, events: messages.NewEvent, callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
 
+	deleteStreamRaw(message: messages.DeleteStream, callback: (error?: any, result?: messages.DeleteStreamCompleted) => void);
 	deleteStream(stream: string, expectedVersion: number, callback: (error?: any, result?: messages.DeleteStreamCompleted) => void);
 }
 

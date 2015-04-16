@@ -92,7 +92,6 @@ class TcpConnection implements IConnection {
 	appendToStream(stream: string, expectedVersion: number, event: messages.NewEvent, callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
 	appendToStream(stream: string, expectedVersion: number, events: messages.NewEvent[], callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
 	appendToStream(stream: string, expectedVersion: number, events: any, callback: (error?: any, result?: messages.WriteEventsCompleted) => void) {
-		log.debug('TcpConnection - appendToStream', 'Append data to stream ' + stream + ', expected version ' + expectedVersion);
 
 		var eventArray: messages.NewEvent[];
 		if (Object.prototype.toString.call(events) === '[object Array]' ) {
@@ -101,7 +100,13 @@ class TcpConnection implements IConnection {
 			eventArray = [ events ];
 		}
 
-		this._sendTcpPacket(Commands.WriteEvents, this._serializer.serialize(Commands.WriteEvents, new messages.WriteEvents(stream, expectedVersion, events)), callback);
+		this.appendToStreamRaw(new messages.WriteEvents(stream, expectedVersion, events), callback);
+	}
+
+	appendToStreamRaw(message: messages.WriteEvents, callback: (error?: any, result?: messages.WriteEventsCompleted) => void) {
+		log.debug('TcpConnection - appendToStreamRaw', 'Append data to stream ' + message.eventStreamId + ', expected version ' + message.expectedVersion);
+
+		this._sendTcpPacket(Commands.WriteEvents, this._serializer.serialize(Commands.WriteEvents, message), callback);
 	}
 
 	private _handleWriteEventsCompleted(correlationId: string, payload: Buffer) {
@@ -120,9 +125,13 @@ class TcpConnection implements IConnection {
 	}
 
 	deleteStream(stream: string, expectedVersion: number, callback: (error?: any, result?: messages.DeleteStreamCompleted) => void) {
-		log.debug('TcpConnection - deleteStream', 'Delete stream ' + stream + ', expected version ' + expectedVersion);
+		this.deleteStreamRaw(new messages.DeleteStream(stream, expectedVersion), callback);
+	}
 
-		this._sendTcpPacket(Commands.DeleteStream, this._serializer.serialize(Commands.DeleteStream, new messages.DeleteStream(stream, expectedVersion)), callback);
+	deleteStreamRaw(message: messages.DeleteStream, callback: (error?: any, result?: messages.DeleteStreamCompleted) => void) {
+		log.debug('TcpConnection - deleteStreamRaw', 'Delete stream ' + message.eventStreamId + ', expected version ' + message.expectedVersion);
+
+		this._sendTcpPacket(Commands.DeleteStream, this._serializer.serialize(Commands.DeleteStream, message), callback);
 	}
 
 	private _handleDeleteStreamCompleted(correlationId: string, payload: Buffer) {
