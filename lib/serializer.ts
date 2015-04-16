@@ -16,13 +16,13 @@ class Serializer {
 		}
 	}
 
-	serialize(command: number, message: messages.IMessage) {
-		var protoMessage = this._builder.build(this._ns + Commands.codeToCommand(command));
+	serialize(type: string, message: messages.IMessage) {
+		var protoMessage = this._builder.build(this._ns + type);
 		return new protoMessage(message).toBuffer();
 	}
 
-	deserialize<T extends messages.IMessage>(command: number, buffer: any): T {
-		var serializer = this._builder.build(this._ns + Commands.codeToCommand(command));
+	deserialize<T extends messages.IMessage>(type: string, buffer: any): T {
+		var serializer = this._builder.build(this._ns + type);
 		return <T>serializer.decode(buffer);
 	}
 }

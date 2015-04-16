@@ -106,14 +106,14 @@ class TcpConnection implements IConnection {
 	appendToStreamRaw(message: messages.WriteEvents, callback: (error?: any, result?: messages.WriteEventsCompleted) => void) {
 		log.debug('TcpConnection - appendToStreamRaw', 'Append data to stream ' + message.eventStreamId + ', expected version ' + message.expectedVersion);
 
-		this._sendTcpPacket(Commands.WriteEvents, this._serializer.serialize(Commands.WriteEvents, message), callback);
+		this._sendTcpPacket(Commands.WriteEvents, this._serializer.serialize('WriteEvents', message), callback);
 	}
 
 	private _handleWriteEventsCompleted(correlationId: string, payload: Buffer) {
 		log.debug('TcpConnection - _handleWriteEventsCompleted', 'Received write events completed', { commandCode: Commands.DeleteStreamCompleted, correlationId: correlationId, message: message });
 
 		var callback = this._getResponseCallback(correlationId);
-		var message = this._serializer.deserialize<messages.WriteEventsCompleted>(Commands.WriteEventsCompleted, payload);
+		var message = this._serializer.deserialize<messages.WriteEventsCompleted>('WriteEventsCompleted', payload);
 
 		if (!callback) {
 			log.debug('TcpConnection - _handleWriteEventsCompleted', 'No callback registered', { commandCode: Commands.WriteEventsCompleted, correlationId: correlationId, noCallback: true });
@@ -131,14 +131,14 @@ class TcpConnection implements IConnection {
 	deleteStreamRaw(message: messages.DeleteStream, callback: (error?: any, result?: messages.DeleteStreamCompleted) => void) {
 		log.debug('TcpConnection - deleteStreamRaw', 'Delete stream ' + message.eventStreamId + ', expected version ' + message.expectedVersion);
 
-		this._sendTcpPacket(Commands.DeleteStream, this._serializer.serialize(Commands.DeleteStream, message), callback);
+		this._sendTcpPacket(Commands.DeleteStream, this._serializer.serialize('DeleteStream', message), callback);
 	}
 
 	private _handleDeleteStreamCompleted(correlationId: string, payload: Buffer) {
 		log.debug('TcpConnection - _handleDeleteStreamCompleted', 'Received delete stream completed', { commandCode: Commands.DeleteStreamCompleted, correlationId: correlationId, message: message });
 
 		var callback = this._getResponseCallback(correlationId);
-		var message = this._serializer.deserialize<messages.DeleteStreamCompleted>(Commands.DeleteStreamCompleted, payload);
+		var message = this._serializer.deserialize<messages.DeleteStreamCompleted>('DeleteStreamCompleted', payload);
 
 		if (!callback) {
 			log.debug('TcpConnection - _handleDeleteStreamCompleted', 'No callback registered', { commandCode: Commands.DeleteStreamCompleted, correlationId: correlationId, noCallback: true });
@@ -146,6 +146,31 @@ class TcpConnection implements IConnection {
 			callback(null, message);
 		} else {
 			callback('Operation result: ' + message.result, message);
+		}
+	}
+
+	readStreamEventsForward(stream: string, from: number, max: number, callback: (error?: any, result?: messages.ReadStreamEventsCompleted) => void) {
+		this.readStreamEventsForwardRaw(new messages.ReadStreamEvents(stream, from, max), callback);
+	}
+
+	readStreamEventsForwardRaw(message: messages.ReadStreamEvents, callback: (error?: any, result?: messages.ReadStreamEventsCompleted) => void) {
+		log.debug('TcpConnection - readStreamEventsForwardRaw', 'Reading stream ' + message.eventStreamId + ', start: ' + message.fromEventNumber + ', max: ' + message.maxCount);
+
+		this._sendTcpPacket(Commands.ReadStreamEventsForward, this._serializer.serialize('ReadStreamEvents', message), callback);
+	}
+
+	private _handleReadStreamEventsCompleted(correlationId: string, payload: Buffer) {
+		log.debug('TcpConnection - _handleReadStreamEventsCompleted', 'Received read stream completed', { commandCode: Commands.ReadStreamEventsForward, correlationId: correlationId, message: message });
+
+		var callback = this._getResponseCallback(correlationId);
+		var message = this._serializer.deserialize<messages.ReadStreamEventsCompleted>('ReadStreamEventsCompleted', payload);
+
+		if (!callback) {
+			log.debug('TcpConnection - _handleReadStreamEventsCompleted', 'No callback registered', { commandCode: Commands.ReadStreamEventsForward, correlationId: correlationId, noCallback: true });
+		} else if (message.result === messages.ReadStreamResult.success) {
+			callback(null, message);
+		} else {
+			callback('Read stream result: ' + message.result, message);
 		}
 	}
 
@@ -233,6 +258,8 @@ class TcpConnection implements IConnection {
 			this._handleWriteEventsCompleted(correlationId, payload);
 		} else if (commandCode === Commands.DeleteStreamCompleted) {
 			this._handleDeleteStreamCompleted(correlationId, payload);
+		} else if (commandCode === Commands.ReadStreamEventsForwardCompleted) {
+			this._handleReadStreamEventsCompleted(correlationId, payload);
 		} else {
 			log.warn('TcpConnection - _processCompletePacket', 'Received unknown packet type (' + command + ')', { commandCode: commandCode, correlationId: correlationId, unknownCommand: true });
 

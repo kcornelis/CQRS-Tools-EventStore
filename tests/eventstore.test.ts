@@ -122,7 +122,7 @@ describe('Event store - TCP connection', () => {
 		});
 
 		it('should return an error if the stream is not deleted', (done) => {
-			eventStore.deleteStream(streamName, 9999999999,
+			eventStore.deleteStream(streamName, 99999999999,
 				(error, response) => {
 					error.should.exist;
 					response.result.should.eql(messages.OperationResult.wrongExpectedVersion);
@@ -151,6 +151,45 @@ describe('Event store - TCP connection', () => {
 				(error, response) => {
 					should.not.exist(error);
 					response.result.should.eql(messages.OperationResult.success);
+					done();
+				});
+		});
+	});
+
+	describe('When reading a stream', () => {
+
+		var streamName = 'demo-stream';
+
+		beforeEach(done => {
+			eventStore.deleteStream(streamName, common.ExpectedVersion.any, () => {
+				eventStore.appendToStream(streamName, common.ExpectedVersion.any,
+					new messages.NewEvent(uuid.v4(), 'Test', { somedata: 1 }, { somemetadata: 2 }),
+					done);
+			});
+		});
+
+		it('should execute the callback with no error and the response message', (done) => {
+			eventStore.readStreamEventsForward(streamName, 0, 10,
+				(error, response) => {
+					should.not.exist(error);
+					response.result.should.eql(messages.ReadStreamResult.success);
+					done();
+				});
+		});
+
+		it('should return the stream events', (done) => {
+			eventStore.readStreamEventsForward(streamName, 0, 99999999999,
+				(error, response) => {
+					response.events[0].event.data.toString('utf8').should.eql('{"somedata":1}');
+					done();
+				});
+		});
+
+		it('should return an error if the response is no success', (done) => {
+			eventStore.readStreamEventsForward('blablablabla', 0, 99999999999,
+				(error, response) => {
+					error.should.exist;
+					response.result.should.eql(messages.ReadStreamResult.noStream);
 					done();
 				});
 		});

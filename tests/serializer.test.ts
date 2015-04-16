@@ -14,8 +14,8 @@ describe('Serializer', () => {
 		it('it should deserialize with the same values', () => {
 
 			var original = new messages.DeleteStream('abc', 10, true, false);
-			var buffer = serializer.serialize(Commands.DeleteStream, original);
-			var copy = serializer.deserialize<messages.DeleteStream>(Commands.DeleteStream, buffer);
+			var buffer = serializer.serialize('DeleteStream', original);
+			var copy = serializer.deserialize<messages.DeleteStream>('DeleteStream', buffer);
 
 			copy.eventStreamId.should.eql('abc');
 			copy.expectedVersion.should.eql(10);
