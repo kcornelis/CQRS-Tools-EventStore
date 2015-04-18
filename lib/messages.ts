@@ -1,94 +1,11 @@
 /// <reference path="../typings/all.d.ts" />
 
 import ProtoBuf = require('protobufjs');
-import common = require('./common');
+import ContentType = require('./ContentType');
+import ExpectedVersion = require('./ExpectedVersion');
+import StreamPosition = require('./StreamPosition');
 
 export interface IMessage { }
-
-export class OperationResult {
-	static success: number = 0;
-	static prepareTimeout: number = 1;
-	static commitTimeout: number = 2;
-	static forwardTimeout: number = 3;
-	static wrongExpectedVersion: number = 4;
-	static streamDeleted: number = 5;
-	static invalidTransaction: number = 6;
-	static accessDenied: number = 7;
-}
-
-export class ReadEventResult {
-	static success: number = 0;
-	static notFound: number = 1;
-	static noStream: number = 2;
-	static streamDeleted: number = 3;
-	static error: number = 4;
-	static accessDenied: number = 5;
-}
-
-export class ReadStreamResult {
-	static success: number = 0;
-	static noStream: number = 1;
-	static streamDeleted: number = 2;
-	static notModified: number = 3;
-	static error: number = 4;
-	static accessDenied: number = 5;
-}
-
-export class ReadAllResult {
-	static success: number = 0;
-	static notModified: number = 1;
-	static error: number = 2;
-	static accessDenied: number = 3;
-}
-
-export class UpdatePersistentSubscriptionResult {
-	static success: number = 0;
-	static doesNotExists: number = 1;
-	static fail: number = 2;
-	static accessDenied: number = 3;
-}
-
-export class CreatePersistentSubscriptionResult {
-	static success: number = 0;
-	static alreadyExists: number = 1;
-	static fail: number = 2;
-	static accessDenied: number = 3;
-}
-
-export class DeletePersistentSubscriptionResult {
-	static success: number = 0;
-	static doesNotExist: number = 1;
-	static fail: number = 2;
-	static accessDenied: number = 3;
-}
-
-export class NakAction {
-	static unknown: number = 0;
-	static park: number = 1;
-	static retry: number = 2;
-	static skip: number = 3;
-	static stop: number = 4;
-}
-
-export class SubscriptionDropReason {
-	static unsubscribed: number = 0;
-	static accessDenied: number = 1;
-	static notFound: number = 2;
-	static persistentSubscriptionDeleted: number = 3;
-	static subscriberMaxCountReached: number = 4;
-}
-
-export class NotHandledReason {
-	static notReady: number = 0;
-	static tooBusy: number = 1;
-	static notMaster: number = 2;
-}
-
-export class ScavengeResult {
-	static success: number = 0;
-	static inProgress: number = 1;
-	static failed: number = 2;
-}
 
 export class NewEvent {
 
@@ -115,14 +32,14 @@ export class NewEvent {
 	populateData(data: any) {
 		if (data) {
 			if (Buffer.isBuffer(data)) {
-				this.dataContentType = common.ContentType.binary;
+				this.dataContentType = ContentType.binary;
 				this.data = data;
 			} else {
-				this.dataContentType = common.ContentType.json;
+				this.dataContentType = ContentType.json;
 				this.data = new Buffer(JSON.stringify(data));
 			}
 		} else {
-			this.dataContentType = common.ContentType.binary;
+			this.dataContentType = ContentType.binary;
 			this.data = new Buffer([]);
 		}
 	}
@@ -130,14 +47,14 @@ export class NewEvent {
 	populateMetadata(metadata: any) {
 		if (metadata) {
 			if (Buffer.isBuffer(metadata)) {
-				this.metadataContentType = common.ContentType.binary;
+				this.metadataContentType = ContentType.binary;
 				this.metadata = metadata;
 			} else {
-				this.metadataContentType = common.ContentType.json;
+				this.metadataContentType = ContentType.json;
 				this.metadata = new Buffer(JSON.stringify(metadata));
 			}
 		} else {
-			this.metadataContentType = common.ContentType.binary;
+			this.metadataContentType = ContentType.binary;
 			this.metadata = new Buffer([]);
 		}
 	}
@@ -175,7 +92,7 @@ export class WriteEvents implements IMessage {
 	events: NewEvent[];
 	requireMaster: boolean;
 
-	constructor(eventStreamId: string, expectedVersion: number = common.ExpectedVersion.any,
+	constructor(eventStreamId: string, expectedVersion: number = ExpectedVersion.any,
 			events: NewEvent[] = [], requireMaster: boolean = true) {
 
 		this.eventStreamId = eventStreamId;
@@ -201,7 +118,7 @@ export class DeleteStream implements IMessage {
 	requireMaster: boolean;
 	hardDelete: boolean;
 
-	constructor(eventStreamId: string, expectedVersion: number = common.ExpectedVersion.any,
+	constructor(eventStreamId: string, expectedVersion: number = ExpectedVersion.any,
 			requireMaster: boolean = true, hardDelete: boolean = false) {
 		this.eventStreamId = eventStreamId;
 		this.expectedVersion = expectedVersion;
@@ -223,7 +140,7 @@ export class TransactionStart implements IMessage {
 	expectedVersion: number;
 	requireMaster: boolean;
 
-	constructor(eventStreamId: string, expectedVersion: number = common.ExpectedVersion.any,
+	constructor(eventStreamId: string, expectedVersion: number = ExpectedVersion.any,
 			requireMaster: boolean = true) {
 		this.eventStreamId = eventStreamId;
 		this.expectedVersion = expectedVersion;
@@ -374,7 +291,7 @@ export class CreatePersistentSubscription implements IMessage {
 	subscriberMaxCount: number;
 
 	constructor(subscriptionGroupName: string, eventStreamId: string, resolveLinkTos: boolean = false,
-			startFrom: number = common.StreamPosition.end, messageTimeoutMilliseconds: number = 30000, recordStatistics: boolean = false,
+			startFrom: number = StreamPosition.end, messageTimeoutMilliseconds: number = 30000, recordStatistics: boolean = false,
 			liveBufferSize: number = 500, readBatchSize: number = 10, bufferSize: number = 20,
 			maxRetryCount: number = 500, preferRoundRobin: boolean = true, checkpointAfterTime: number = 2000,
 			checkpointMaxCount: number = 10, checkpointMinCount: number = 1000, subscriberMaxCount: number = 0) {
@@ -424,7 +341,7 @@ export class UpdatePersistentSubscription implements IMessage {
 	subscriberMaxCount: number;
 
 	constructor(subscriptionGroupName: string, eventStreamId: string, resolveLinkTos: boolean = false,
-			startFrom: number = common.StreamPosition.end, messageTimeoutMilliseconds: number = 30000, recordStatistics: boolean = false,
+			startFrom: number = StreamPosition.end, messageTimeoutMilliseconds: number = 30000, recordStatistics: boolean = false,
 			liveBufferSize: number = 500, readBatchSize: number = 10, bufferSize: number = 20,
 			maxRetryCount: number = 500, preferRoundRobin: boolean = true, checkpointAfterTime: number = 2000,
 			checkpointMaxCount: number = 10, checkpointMinCount: number = 1000, subscriberMaxCount: number = 0) {

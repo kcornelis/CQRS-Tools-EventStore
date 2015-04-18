@@ -2,7 +2,7 @@
 
 import ProtoBuf = require('protobufjs');
 import messages = require('./messages');
-import Commands = require('./commands');
+import Commands = require('./Commands');
 
 class Serializer {
 
@@ -21,7 +21,7 @@ class Serializer {
 		return new protoMessage(message).toBuffer();
 	}
 
-	deserialize<T extends messages.IMessage>(type: string, buffer: any): T {
+	deserialize<T extends messages.IMessage>(type: string, buffer: Buffer): T {
 		var serializer = this._builder.build(this._ns + type);
 		return <T>serializer.decode(buffer);
 	}

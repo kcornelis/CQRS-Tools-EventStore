@@ -6,7 +6,8 @@
   "main": "cqrs-tools-eventstore.js",
   "dependencies": {
     "node-uuid": "^1.4.3",
-    "protobufjs": "^4.0.0-b2"
+    "protobufjs": "^4.0.0-b2",
+    "q": "^1.2.0"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

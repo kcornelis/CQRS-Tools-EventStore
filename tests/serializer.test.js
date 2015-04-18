@@ -1,7 +1,7 @@
 /// <reference path="../typings/all.d.ts" />
 require('should');
 var messages = require('../lib/messages');
-var Serializer = require('../lib/serializer');
+var Serializer = require('../lib/Serializer');
 describe('Serializer', function () {
     describe('When serializing a message', function () {
         var serializer = new Serializer();

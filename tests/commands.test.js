@@ -1,6 +1,6 @@
 /// <reference path="../typings/all.d.ts" />
 require('should');
-var Commands = require('../lib/commands');
+var Commands = require('../lib/Commands');
 describe('Commands', function () {
     describe('When requesting the code for a command', function () {
         it('should return the code', function () {

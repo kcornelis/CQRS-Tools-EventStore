@@ -2,8 +2,8 @@
 
 import should = require('should');
 import messages = require('../lib/messages');
-import common = require('../lib/common');
 import uuid = require('node-uuid');
+import ContentType = require('../lib/ContentType');
 
 describe('NewEvent', () => {
 
@@ -25,7 +25,7 @@ describe('NewEvent', () => {
 		});
 
 		it('should contain the data type', () => {
-			newEvent.dataContentType.should.eql(common.ContentType.json);
+			newEvent.dataContentType.should.eql(ContentType.json);
 		});
 
 		it('should contain the metadata as json', () => {
@@ -33,7 +33,7 @@ describe('NewEvent', () => {
 		});
 
 		it('should contain the metadata type', () => {
-			newEvent.metadataContentType.should.eql(common.ContentType.json);
+			newEvent.metadataContentType.should.eql(ContentType.json);
 		});
 	});
 
@@ -61,7 +61,7 @@ describe('NewEvent', () => {
 		});
 
 		it('should contain the data type', () => {
-			newEvent.dataContentType.should.eql(common.ContentType.binary);
+			newEvent.dataContentType.should.eql(ContentType.binary);
 		});
 
 		it('should contain the metadata as json', () => {
@@ -69,7 +69,7 @@ describe('NewEvent', () => {
 		});
 
 		it('should contain the metadata type', () => {
-			newEvent.metadataContentType.should.eql(common.ContentType.binary);
+			newEvent.metadataContentType.should.eql(ContentType.binary);
 		});
 	});
 
@@ -83,7 +83,7 @@ describe('NewEvent', () => {
 		});
 
 		it('should contain the data type', () => {
-			newEvent.dataContentType.should.eql(common.ContentType.binary);
+			newEvent.dataContentType.should.eql(ContentType.binary);
 		});
 
 		it('should contain the metadata as json', () => {
@@ -91,7 +91,7 @@ describe('NewEvent', () => {
 		});
 
 		it('should contain the metadata type', () => {
-			newEvent.metadataContentType.should.eql(common.ContentType.binary);
+			newEvent.metadataContentType.should.eql(ContentType.binary);
 		});
 	});
 });

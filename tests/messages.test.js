@@ -1,8 +1,8 @@
 /// <reference path="../typings/all.d.ts" />
 var should = require('should');
 var messages = require('../lib/messages');
-var common = require('../lib/common');
 var uuid = require('node-uuid');
+var ContentType = require('../lib/ContentType');
 describe('NewEvent', function () {
     describe('Create new event message', function () {
         var id = uuid.v4();
@@ -17,13 +17,13 @@ describe('NewEvent', function () {
             newEvent.data.toString('utf8').should.eql('{"data":1}');
         });
         it('should contain the data type', function () {
-            newEvent.dataContentType.should.eql(common.ContentType.json);
+            newEvent.dataContentType.should.eql(ContentType.json);
         });
         it('should contain the metadata as json', function () {
             newEvent.metadata.toString('utf8').should.eql('{"metadata":2}');
         });
         it('should contain the metadata type', function () {
-            newEvent.metadataContentType.should.eql(common.ContentType.json);
+            newEvent.metadataContentType.should.eql(ContentType.json);
         });
     });
     describe('Event id', function () {
@@ -44,13 +44,13 @@ describe('NewEvent', function () {
             newEvent.data.toString('utf8').should.eql('data');
         });
         it('should contain the data type', function () {
-            newEvent.dataContentType.should.eql(common.ContentType.binary);
+            newEvent.dataContentType.should.eql(ContentType.binary);
         });
         it('should contain the metadata as json', function () {
             newEvent.metadata.toString('utf8').should.eql('metadata');
         });
         it('should contain the metadata type', function () {
-            newEvent.metadataContentType.should.eql(common.ContentType.binary);
+            newEvent.metadataContentType.should.eql(ContentType.binary);
         });
     });
     describe('Data and metadata can be null', function () {
@@ -60,13 +60,13 @@ describe('NewEvent', function () {
             newEvent.data.toString('utf8').should.eql('');
         });
         it('should contain the data type', function () {
-            newEvent.dataContentType.should.eql(common.ContentType.binary);
+            newEvent.dataContentType.should.eql(ContentType.binary);
         });
         it('should contain the metadata as json', function () {
             newEvent.metadata.toString('utf8').should.eql('');
         });
         it('should contain the metadata type', function () {
-            newEvent.metadataContentType.should.eql(common.ContentType.binary);
+            newEvent.metadataContentType.should.eql(ContentType.binary);
         });
     });
 });

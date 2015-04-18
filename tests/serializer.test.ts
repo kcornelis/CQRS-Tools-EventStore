@@ -2,8 +2,7 @@
 
 require('should');
 import messages = require('../lib/messages');
-import Serializer = require('../lib/serializer');
-import Commands = require('../lib/commands');
+import Serializer = require('../lib/Serializer');
 
 describe('Serializer', () => {
 

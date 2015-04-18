@@ -1,21 +1,22 @@
+/// <reference path="../typings/all.d.ts" />
+
 import messages = require('./messages');
+import Q = require('q');
 
 interface IConnection {
 	connect();
 	onConnect(callback: () => void);
 	onError(callback: (error) => void);
 
-	ping(callback: (error?: any) => void);
+	ping(): Q.Promise<void>;
 
-	appendToStreamRaw(message: messages.WriteEvents, callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
-	appendToStream(stream: string, expectedVersion: number, event: messages.NewEvent[], callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
-	appendToStream(stream: string, expectedVersion: number, events: messages.NewEvent, callback: (error?: any, result?: messages.WriteEventsCompleted) => void);
+	appendToStream(stream: string, expectedVersion: number, events: messages.NewEvent[]): Q.Promise<messages.WriteEventsCompleted>;
+	appendToStream(stream: string, expectedVersion: number, event: messages.NewEvent): Q.Promise<messages.WriteEventsCompleted>;
 
-	deleteStreamRaw(message: messages.DeleteStream, callback: (error?: any, result?: messages.DeleteStreamCompleted) => void);
-	deleteStream(stream: string, expectedVersion: number, callback: (error?: any, result?: messages.DeleteStreamCompleted) => void);
+	deleteStream(stream: string, expectedVersion: number): Q.Promise<messages.DeleteStreamCompleted>;
+	deleteStream(stream: string, expectedVersion: number, hardDelete: boolean): Q.Promise<messages.DeleteStreamCompleted>;
 
-	readStreamEventsForwardRaw(message: messages.ReadStreamEvents, callback: (error?: any, result?: messages.ReadStreamEventsCompleted) => void);
-	readStreamEventsForward(stream: string, from: number, max: number, callback: (error?: any, result?: messages.ReadStreamEventsCompleted) => void);
+	readStreamEventsForward(stream: string, from: number, max: number): Q.Promise<messages.ReadStreamEventsCompleted>;
 }
 
 export = IConnection;

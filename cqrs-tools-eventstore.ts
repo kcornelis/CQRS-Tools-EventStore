@@ -1,5 +1,8 @@
-export import messages = require('./lib/messages');
-export import common = require('./lib/common');
+export import ContentType = require('./lib/ContentType');
+export import ExpectedVersion = require('./lib/ExpectedVersion');
+export import StreamPosition = require('./lib/StreamPosition');
 
-export import EventStore = require('./lib/eventstore');
-export import IConnection = require('./lib/iconnection');
+export import results = require('./lib/results');
+export import EventStore = require('./lib/EventStore');
+export import IConnection = require('./lib/IConnection');
+export import Logger = require('./lib/Logger');
