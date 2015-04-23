@@ -8,7 +8,7 @@
     "filesGlob": [
         "lib/**/*.ts",
         "tests/**/*.ts",
-        "cqrs-tools.ts"
+        "typed-eventstore.ts"
     ],
     "files": [
         "lib/Commands.ts",
@@ -16,12 +16,12 @@
         "lib/EventStore.ts",
         "lib/ExpectedVersion.ts",
         "lib/IConnection.ts",
-        "lib/Logger.ts",
         "lib/Serializer.ts",
         "lib/Settings.ts",
         "lib/StreamPosition.ts",
         "lib/TcpConnection.ts",
         "lib/TcpPacket.ts",
+        "lib/logger.ts",
         "lib/messages.ts",
         "lib/operations.ts",
         "lib/operations/AppendToStreamOperation.ts",
@@ -35,6 +35,7 @@
         "tests/Commands.test.ts",
         "tests/Messages.test.ts",
         "tests/Serializer.test.ts",
-        "tests/TcpConnection.test.ts"
+        "tests/TcpConnection.test.ts",
+        "typed-eventstore.ts"
     ]
 }

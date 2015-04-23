@@ -1,9 +1,9 @@
 {
-  "name": "cqrs-tools-eventstore",
+  "name": "typed-eventstore",
   "version": "0.0.1-alpha",
   "private": true,
-  "description": "An eventstore repository for cqrs-tools",
-  "main": "cqrs-tools-eventstore.js",
+  "description": "A client for eventstore build in typescript",
+  "main": "typed-eventstore.js",
   "dependencies": {
     "node-uuid": "^1.4.3",
     "protobufjs": "^4.0.0-b2",

@@ -18,12 +18,12 @@ module.exports = function(grunt){
 				force: true
 			},
 			files: {
-				src: ['lib/**/*.ts', 'tests/**/*.ts', 'cqrs-tools-eventstore.ts']
+				src: ['lib/**/*.ts', 'tests/**/*.ts', 'typed-eventstore.ts']
 			}
 		},		
 		typescript: {
 			lib: {
-				src: ['lib/**/*.ts', 'cqrs-tools-eventstore.ts'],
+				src: ['lib/**/*.ts', 'typed-eventstore.ts'],
 				options: {
 					module: 'commonjs',
 					target: 'es5'
